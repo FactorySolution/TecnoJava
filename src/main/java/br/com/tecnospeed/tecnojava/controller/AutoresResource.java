@@ -1,56 +1,56 @@
 package br.com.tecnospeed.tecnojava.controller;
 
+import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import br.com.tecnospeed.tecnojava.model.Autor;
-import br.com.tecnospeed.tecnojava.repository.AutorRepository;
+import br.com.tecnospeed.tecnojava.services.AutoresService;
 
 @RestController
 @RequestMapping(value = "/autor")
 public class AutoresResource {
 
 	@Autowired
-	private AutorRepository autorRepository;
+	private AutoresService autoresService;
 
-	@RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-	public List<Autor> listar() {
-		List<Autor> autor = autorRepository.findAll();
-		return autor;
-	}
-
-	@RequestMapping(value = "/{id}", method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-	public Autor autor(@PathVariable("id") Long id) {
-		Optional<Autor> autor = autorRepository.findById(id);
-		if (autor.isPresent())
-			return autor.get();
-		return null;
-	}
-
-	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public void delete(@PathVariable("id") Long id) {
-		autorRepository.deleteById(id);
-	}
-
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-	public Autor update(@RequestBody Autor autor, @PathVariable("id") Long id) {
-		autor.setId(id);
-		autorRepository.save(autor);
-		return autor;
+	@RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE,
+			MediaType.APPLICATION_XML_VALUE })
+	public ResponseEntity<List<Autor>> listar() {
+		List<Autor> autores = autoresService.listar();
+		return ResponseEntity.status(HttpStatus.OK).body(autores);
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
-	public Autor create(@RequestBody Autor autor) {
-		autorRepository.save(autor);
-		return autor;
+	public ResponseEntity<Void> salvar(@RequestBody Autor autor) {
+		autor = autoresService.salvar(autor);
+
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(autor.getId()).toUri();
+ 
+		return ResponseEntity.created(uri).build();
+	}
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	public ResponseEntity<Autor> buscar(@PathVariable("id") Long id) {
+		Autor autor = autoresService.buscar(id);
+		return ResponseEntity.status(HttpStatus.OK).body(autor);
+	}
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<Void> atualizar(@PathVariable("id") Long id) {
+		autoresService.deletar(id);
+
+		return ResponseEntity.noContent().build();
 	}
 
 }

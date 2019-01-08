@@ -6,6 +6,8 @@ import org.springframework.stereotype.Repository;
 import br.com.tecnospeed.tecnojava.model.Autor;
 
 @Repository
-public interface AutorRepository extends JpaRepository<Autor, Long> {
+public interface AutoresRepository extends JpaRepository<Autor, Long> {
+	
+	
 
 }
